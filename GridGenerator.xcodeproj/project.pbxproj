@@ -85,6 +85,8 @@
 			dependencies = (
 			);
 			name = GridGenerator;
+			packageProductDependencies = (
+			);
 			productName = GridGenerator;
 			productReference = 711B1B7C2B89B03400249C7E /* GridGenerator.app */;
 			productType = "com.apple.product-type.application";
@@ -113,6 +115,8 @@
 				Base,
 			);
 			mainGroup = 711B1B732B89B03400249C7E;
+			packageReferences = (
+			);
 			productRefGroup = 711B1B7D2B89B03400249C7E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
