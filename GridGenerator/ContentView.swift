@@ -8,58 +8,133 @@
 import SwiftUI
 import AppKit
 
-extension NSView {
+class MainViewModel: ObservableObject {
 
-    /// Get `NSImage` representation of the view.
-    ///
-    /// - Returns: `NSImage` of view
+    @Published var backgroundColor: Color = .white
+    @Published var foregroundColor: Color = .gray
+    @Published var offset: CGFloat = 70
+    @Published var symbols = ["apple.terminal", "globe", "apple.logo", "bolt", "iphone", "trophy", "moon.stars", "gamecontroller", "lightbulb.max.fill", "music.note", "car", "dollarsign", "steeringwheel", "film.stack", "face.smiling.inverse", "chevron.left.forwardslash.chevron.right", "chart.line.uptrend.xyaxis", "arkit", "hands.and.sparkles", "hand.thumbsup.fill", "hare", "cpu", "wifi", "mountain.2", "house.and.flag", "popcorn", "dice", "flag.checkered.2.crossed"]
+    @Published var scale: CGFloat = 1
+    @Published var size = CGSize(width: 3024, height: 1964)
 
-    func image() -> NSImage {
-        let imageRepresentation = bitmapImageRepForCachingDisplay(in: bounds)!
-        cacheDisplay(in: bounds, to: imageRepresentation)
-        return NSImage(cgImage: imageRepresentation.cgImage!, size: bounds.size)
+    @Published var selectedSymbol: String?
+
+
+    func addSymbol() {
+        if let selectedSymbol {
+            symbols.append(selectedSymbol)
+        }
+        self.selectedSymbol = nil
     }
-}
 
-extension View {
-    func snapshot() -> NSImage {
-        let controller = NSHostingView(rootView: self)
-        let view = controller
-
-        let targetSize = controller.intrinsicContentSize
-        view.bounds = CGRect(origin: .zero, size: targetSize)
-
-        return view.image()
+    func deleteSymbol(at index: Int) {
+        symbols.remove(at: index)
     }
+
 }
 
 struct ContentView: View {
 
+    @ObservedObject var viewModel = MainViewModel()
+
     var body: some View {
-        ZStack {
-            Button {
-                let canvas = RandomSFSymbolsBackground().frame(width: 1290, height: 2796)
-                guard let cgImage = ImageRenderer(content: canvas).cgImage else { return }
+        HStack {
+            RandomSFSymbolsBackground(scale: $viewModel.scale,
+                                      offset: $viewModel.offset,
+                                      symbols: $viewModel.symbols,
+                                      backgroundColor: $viewModel.backgroundColor,
+                                      foregroundColor: $viewModel.foregroundColor)
 
-                let image = NSImage(cgImage: cgImage, size: .init(width: 1290, height: 2796))
-                guard let representation = image.tiffRepresentation else { return }
-                let imageRepresentation = NSBitmapImageRep(data: representation)
-
-                let imageData = imageRepresentation?.representation(using: .png, properties: [:])
-
-                guard let url = showSavePanel() else { return }
-
-                try? imageData?.write(to: url)
-            } label: {
-                Text("Save")
-            }
-            .keyboardShortcut("s", modifiers: .command)
-
-            RandomSFSymbolsBackground()
+            settings
+                .frame(width: 300)
         }
     }
 
+    var settings: some View {
+        VStack(alignment: .leading, spacing: 30) {
+            Text("Preferences")
+                .font(.title)
+
+            backgroundColorPicker
+
+            foregroundColorPicker
+
+            scaleSlider
+
+            offsetSlider
+
+            exportSizeSetting
+
+            SelectedSymbolsView(viewModel: viewModel)
+
+            exportButton
+        }
+        .padding(.vertical)
+    }
+
+}
+
+private extension ContentView {
+
+    var backgroundColorPicker: some View {
+        ColorPicker("Background color", selection: $viewModel.backgroundColor)
+    }
+
+    var foregroundColorPicker: some View {
+        ColorPicker("Foreground color", selection: $viewModel.foregroundColor)
+    }
+
+    var scaleSlider: some View {
+        Slider(value: $viewModel.scale, in: 1...5) {
+            Text("Scale: \(Double(viewModel.scale).formatted(.number.precision(.fractionLength(...3))))")
+        }
+    }
+
+    var offsetSlider: some View {
+        Slider(value: $viewModel.offset, in: 10...200) {
+            Text("Offset: \(Int(viewModel.offset))")
+        }
+    }
+
+    var exportSizeSetting: some View {
+        LabeledContent {
+            TextField("Width", text: .init(get: {
+                "\(Int(viewModel.size.width))"
+            }, set: {
+                if let n = NumberFormatter().number(from: $0) {
+                    viewModel.size.width = CGFloat(truncating: n)
+                }
+            }))
+
+            TextField("Height", text: .init(get: {
+                "\(Int(viewModel.size.height))"
+            }, set: {
+                if let n = NumberFormatter().number(from: $0) {
+                    viewModel.size.height = CGFloat(truncating: n)
+                }
+            }))
+        } label: {
+            Text("Export size")
+        }
+    }
+
+    var exportButton: some View {
+        Button {
+            Task { @MainActor in
+                saveImage()
+            }
+        } label: {
+            Text("Export")
+        }
+        .keyboardShortcut("s", modifiers: .command)
+    }
+
+}
+
+private extension ContentView {
+
     func showSavePanel() -> URL? {
+
         let savePanel = NSSavePanel()
         savePanel.allowedContentTypes = [.png]
         savePanel.canCreateDirectories = true
@@ -73,50 +148,28 @@ struct ContentView: View {
         return response == .OK ? savePanel.url : nil
     }
 
-}
+    @MainActor func saveImage() {
+        let canvas = RandomSFSymbolsBackground(scale: $viewModel.scale,
+                                               offset: $viewModel.offset,
+                                               symbols: $viewModel.symbols,
+                                               backgroundColor: $viewModel.backgroundColor,
+                                               foregroundColor: $viewModel.foregroundColor)
+            .frame(width: viewModel.size.width, height: viewModel.size.height)
 
-struct RandomSFSymbolsBackground: View {
+        guard let cgImage = ImageRenderer(content: canvas).cgImage else { return }
 
-    let offset: CGFloat =  50
-    let symbols: [String] = ["function", "doc.text", "rectangle.and.pencil.and.ellipsis", "globe", "bolt", "number", "textformat.123"]
+        let image = NSImage(cgImage: cgImage, size: .init(width: viewModel.size.width, height: viewModel.size.height))
+        guard let representation = image.tiffRepresentation else { return }
+        let imageRepresentation = NSBitmapImageRep(data: representation)
 
-    var body: some View {
-        GeometryReader { geometry in
-            Canvas { context, size in
-                var offsetY: CGFloat = 0
-                var offsetX: CGFloat = 0
-                var alternating = false
-                var index = 0
+        let imageData = imageRepresentation?.representation(using: .png, properties: [:])
 
-                context.scaleBy(x: 5, y: 5)
+        guard let url = showSavePanel() else { return }
 
-                while offsetY < size.height {
-                    while offsetX < size.width {
-                        let symbolName = symbols[index]
-
-                        let x = offsetX
-                        let y = offsetY
-
-                        let image = Image(systemName: symbolName)
-                            .resizable()
-
-                        var resolvedImage = context.resolve(image)
-                        resolvedImage.shading = .color(.gray)
-
-                        context.draw(resolvedImage, at: .init(x: x, y: y))
-                        offsetX += offset
-                        index = index + 1 == symbols.count ? 0 : index + 1
-                    }
-                    alternating.toggle()
-                    offsetX = alternating ? offset / 2 : 0
-                    offsetY += offset
-                }
-            }
-            .background(Color.white)
-        }
+        try? imageData?.write(to: url)
     }
-}
 
+}
 
 #Preview {
     ContentView()
