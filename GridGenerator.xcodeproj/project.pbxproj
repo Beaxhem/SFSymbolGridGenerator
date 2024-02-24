@@ -17,6 +17,7 @@
 		711B1B9A2B89CB1000249C7E /* SymbolIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711B1B992B89CB1000249C7E /* SymbolIcon.swift */; };
 		711B1BA12B89D7EF00249C7E /* RandomSFSymbolsBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711B1BA02B89D7EF00249C7E /* RandomSFSymbolsBackground.swift */; };
 		711B1BA42B89D80B00249C7E /* SelectedSymbolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711B1BA32B89D80B00249C7E /* SelectedSymbolsView.swift */; };
+		711B1BA72B89E68600249C7E /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711B1BA62B89E68600249C7E /* MainViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		711B1B992B89CB1000249C7E /* SymbolIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymbolIcon.swift; sourceTree = "<group>"; };
 		711B1BA02B89D7EF00249C7E /* RandomSFSymbolsBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomSFSymbolsBackground.swift; sourceTree = "<group>"; };
 		711B1BA32B89D80B00249C7E /* SelectedSymbolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedSymbolsView.swift; sourceTree = "<group>"; };
+		711B1BA62B89E68600249C7E /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,7 @@
 		711B1B7E2B89B03400249C7E /* GridGenerator */ = {
 			isa = PBXGroup;
 			children = (
+				711B1BA52B89E68000249C7E /* ViewModel */,
 				711B1B962B89CADF00249C7E /* View */,
 				711B1B932B89CAB200249C7E /* Model */,
 				711B1B7F2B89B03400249C7E /* GridGeneratorApp.swift */,
@@ -109,6 +112,14 @@
 				711B1B992B89CB1000249C7E /* SymbolIcon.swift */,
 			);
 			path = SymbolPicker;
+			sourceTree = "<group>";
+		};
+		711B1BA52B89E68000249C7E /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				711B1BA62B89E68600249C7E /* MainViewModel.swift */,
+			);
+			path = ViewModel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -193,6 +204,7 @@
 				711B1B982B89CAE600249C7E /* SearchBar.swift in Sources */,
 				711B1B922B89CA8A00249C7E /* SymbolsLoader.swift in Sources */,
 				711B1B802B89B03400249C7E /* GridGeneratorApp.swift in Sources */,
+				711B1BA72B89E68600249C7E /* MainViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
